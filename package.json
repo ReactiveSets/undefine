@@ -1,0 +1,40 @@
+{
+  "name": "undefine",
+  
+  "version": "0.1.0",
+  
+  "description": "Module loader, for node, browser globals, and AMD define",
+  
+  "main": "undefine.js",
+  
+  "engines": {
+    "node": ">=0.6.0"
+  },
+  
+  "devDependencies": {
+    "coffee-script"         : "1.7.1",
+    "mocha"                 : "1.18.2",
+    "expect.js"             : "0.3.1",
+    "mocha-unfunk-reporter" : "0.4.0"
+  },
+  
+  "scripts": {
+    "postinstall": "ln -s ../. node_modules/undefine || true"
+  },
+  
+  "repository": {
+    "type": "git",
+    "url":  "git://github.com/ReactiveSets/undefine.git"
+  },
+  
+  "keywords": [
+    "loader",
+    "module",
+    "AMD",
+    "UMD"
+  ],
+  
+  "author": "Reactive Sets",
+  
+  "license": "MIT"
+}
