@@ -16,7 +16,7 @@ Stability: Beta, used by [toubkal](https://github.com/ReactiveSets/toubkal), nee
 
 Fibonacci number calculator module
 
-### Define [fibonacci.js](tree/master/test/fibonacci.js)
+### Define [fibonacci.js](test/fibonacci.js)
 
 ```javascript
   ( this.undefine || require( 'undefine' )( module, require ) )()
@@ -36,7 +36,7 @@ Fibonacci number calculator module
 
 ### Require fibonacci.js
 
-#### In [node.js](tree/master/test/for_node.js)
+#### In [node.js](test/for_node.js)
 
 ```javascript
   var fibonacci = require( 'fibonacci' );
@@ -46,7 +46,7 @@ Fibonacci number calculator module
   console.log( 'fibonacci( ' + n + ' ) =', fibonacci( n ) );
 ```
 
-#### In the [browser](tree/master/test/index.html)
+#### In the [browser](test/index.html)
 
 ```html
   <script src="undefine.js"></script>
@@ -60,7 +60,7 @@ Fibonacci number calculator module
   </script>
 ```
 
-#### With [require.js](tree/master/require.html)
+#### With [require.js](test/require.html)
 
 fibonacci.js loaded dynamically:
 
@@ -76,7 +76,7 @@ fibonacci.js loaded dynamically:
   </script>
 ```
 
-Also works with [curl-amd](tree/master/test/curl.html).
+Also works with [curl-amd](test/curl.html).
 
 ## Licence
 
