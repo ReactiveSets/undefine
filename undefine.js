@@ -25,65 +25,61 @@
 ;!function( undefine_factory ) {
   'use strict';
   
-  var me = 'undefine';
-  
-  // Load me using AMD define if available, allows to load my dependencies dynamically
-  if ( typeof define == 'function' && define.amd ) {
-    // Use AMD define
-    define( me, undefine_factory );
-    
-    // Must explicitly require me so that other modules can get it as a global
-    require( [ me ], function() {
-      console.log( me + ' loaded by AMD loader' );
-    } );
-  } else if ( typeof exports == 'object' ) {
-    // Node
-    undefine_factory( require, exports, module );
+  if ( ( typeof define == 'function' && define.amd ) || typeof exports != 'object' ) {
+    // In the browser, w/ or w/out AMD loader
+    undefine_factory( window );
   } else {
-    // Global
-    var ___;
-    
-    undefine_factory( ___, ___, window );
+    // Node
+    undefine_factory( module, require, exports );
   }
 }
-( function( require, exports, module ) {
+( function( module, require, exports ) {
   'use strict';
   
-  var has_define      = typeof define == 'function' && !! define.amd
-    , slice           = [].slice
-    , private_modules = {}
-    
-    , default_options = {
-        use_name: true,
-        global: true, // set to true to export all modules as globals
-        add_no_conflict: true
-      }
+  var me      = 'undefine'
+    , log     = get_logger()
+    , modules = {}
   ;
   
-  if ( has_define || ! exports ) {
-    // In browser, AMD or Globals
-    // Module is set to the global window object
-    var result = set_module( module );
+  if ( exports ) {
+    // Node
+    log( 'loaded by node' );
     
-    if ( has_define ) module.exports = result;
+    // Requires to first set node module and require, that of the module being defined, not this module object
+    module.exports = set_module;
     
-    return window[ 'undefine' ] = result;
+    return
   }
   
-  // Node
-  // Requires to first set module, that of the module being defined, not to confuse with this module object
-  // set_module also allows to set node base directory using __dirname
-  module.exports = set_module;
+  // In browser, AMD or Globals
+  // Module is set to the global window object
+  var result = set_module( module );
   
-  function set_module( module, node_require ) {
+  if ( has_define() ) {
+    log( 'cooperating with AMD loader' );
+    
+    // AMD loader provides its own require function
+  } else {
+    log( 'standalone globally' );
+    
+    module.require = function( dependencies, factory ) {
+      if ( ! factory ) {
+        factory = dependencies;
+        dependencies = null;
+      }
+      
+      get_dependencies( require_global, dependencies, module, factory );
+    };
+  }
+  
+  return module[ me ] = result;
+  
+  function set_module( module, node_require, node_exports ) {
     
     return set_options;
     
     function set_options( options ) {
-      // ToDo: handle circular dependencies
-      // var extend = ( node_require || require_global )( './extend' );
-      // ToDo: options = extend( {}, default_options, require( 'undefine_options' ), options );
-      options || ( options = default_options );
+      options = options || {};
       
       return undefine;
       
@@ -96,81 +92,117 @@
           dependencies = null;
         }
         
-        // ToDo: allow factory to be an non-function
-        
-        // Don't require more dependencies than used by factory()
-        var factory_length = factory._length || factory.length;
-        
-        dependencies = ( dependencies || [ 'require', 'exports', 'module' ] ).slice( 0, factory_length );
-        
-        if ( has_define ) {
-          var parameters = [ dependencies, factory ];
+        if ( has_define() ) {
+          // AMD define
+          log( 'AMD loading', name, options );
           
-          options.use_name && parameters.unshift( options.amd_name || name );
+          var parameters = [ factory ];
+          
+          dependencies && parameters.unshift( dependencies );
+          
+          options.annonymous || parameters.unshift( options.amd_name || name );
           
           define.apply( module, parameters );
           
           /*
              If module is to be defined as a window global, require it immediately
-             This guaranties that module is executed and allows to set window
+             This guaranties that module is executed and allows to set window.
              https://github.com/umdjs/umd globals using a function wrapper does not work
              unless the module is later required, which is not guarantied if other modules
              assume global dependencies
           */
-          options.amd_global && require( [ name ], function( exports ) {
-            window[ name ] = exports;
+          options.global && require( [ name ], function( exports ) {
+            set_private_module( name, exports, options );
           } );
-        } else if ( exports ) {
+        } if ( exports ) {
           // Node
-          var result = call_factory( node_require );
+          log( 'Node loading', name );
           
-          if ( result ) module.exports = result;
+          call_factory( node_require, function( result ) {
+            if ( result ) module.exports = result;
+          } );
         } else {
           // Globals
-          set_private_module( name, call_factory( require_global ) || {}, options );
+          log( 'Global loading', name, options );
+          
+          call_factory( require_global, function( result ) {
+            set_private_module( name, result, options );
+          } );
         }
         
-        function call_factory( require ) {
-          var specials_dependencies = {
-            require: require,
-            exports: {},
-            module : module
-          };
+        function call_factory( require, then ) {
+          if ( typeof factory != 'function' ) return factory;
           
-          return factory.apply( module, dependencies.map( _require ) );
-          
-          function _require( dependency ) {
-            return specials_dependencies[ dependency ] || require( dependency );
-          } // _require()
+          return get_dependencies( require, dependencies, module, factory, node_exports, then );
         } // call_factory()
       } // undefine()
     } // set_options()
   } // set_module()
   
+  function get_logger() {
+    if ( typeof console == 'object' && typeof console.log == 'function' ) {
+      return console.log.bind( console, me + ':' );
+    } else {
+      return function() {};
+    }
+  } // get_logger()
+  
+  function has_define() {
+    return typeof define == 'function' && !! define.amd;
+  }
+  
+  function get_dependencies( require, dependencies, module, factory, node_exports, then ) {
+    var specials_dependencies = {
+      require: require,
+      exports: node_exports || {},
+      module : module
+    };
+    
+    dependencies = ( dependencies || [ 'require', 'exports', 'module' ] ).map( _require );
+    
+    // ToDo: wait if not all dependencies are met
+    
+    var result = factory.apply( module, dependencies );
+    
+    then && then( result );
+    
+    function _require( dependency ) {
+      return specials_dependencies[ dependency ] || require( dependency );
+    } // _require()
+  }
+  
   function require_global( dependency ) {
     var name = dependency.split( '/' ).pop();
     
-    console.log( 'require_global(), name:', name );
+    log( 'require_global(), name:', name );
     
-    // ToDo: call module factory function lazyly only upon first require
-    var exports = private_modules[ name ] || window[ name ];
+    // ToDo: call module factory function lazyly only upon first require, unless global
+    var exports = modules[ name ] || window[ name ];
     
     if ( exports ) return exports;
     
-    throw new ReferenceError( '"' + name + '" is not defined' );
+    log( 'require_global(), module not yet available name:', name );
+    
+    // ToDo: wait until module is loaded
+    
+    return;
   } // require_global()
   
   function set_private_module( name, exports, options ) {
-    console.log( 'set_private_module', name, Object.prototype.toString( exports ), options );
+    log( 'set_private_module', name, exports, options );
     
-    private_modules[ name ] = exports;
+    if ( modules[ name ] ) throw new Error( 'set_private_module(), allready loaded:', name );
+    
+    exports = exports || {};
+    
+    modules[ name ] = exports;
     
     if ( options.global ) {
       var previous = window[ name ];
       
       window[ name ] = exports;
       
-      if ( options.add_no_conflict && ! exports.noConflict  ) {
+      if ( options.no_conflict && ! exports.noConflict  ) {
         exports.noConflict = no_conflict;
       }
     }

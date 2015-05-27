@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Fibonacci</title>
+    
+    <!-- undefine allows to define modules with a universal signature -->
+    <script src="../undefine.js"></script>
+    
+    <!-- insert your statically-loaded modules here, or bundle them with a minifier -->
+    <script src="fibonacci.js"></script>
+  </head>
+  <body>
+    <h1>Fibonacci</h1>
+    
+    <p id="result"></p>
+    
+    <script>
+      require( [ 'fibonacci' ], function( fibonacci ) {
+        var n = 10;
+        
+        console.log( 'fibonacci( ' + n + ' ) =', fibonacci( n ) );
+      } );
+    </script>
+  </body>
+</html>
