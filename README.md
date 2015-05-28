@@ -98,16 +98,7 @@ The module definition is then equivalent to:
 
 ```javascript
   define( 'fibonacci', [], function() {
-    return fibonacci;
-    
-    // Naive recursive implementation of a Fibonacci number calculator
-    function fibonacci( n ) {
-      if ( n < 0 ) return;
-      
-      if ( n < 2 ) return n;
-      
-      return fibonacci( n - 2 ) + fibonacci( n - 1 );
-    }
+    // fibonacci implementation here
   } )
 ```
 ### undefine( options )
@@ -123,8 +114,9 @@ all default to **false** and are browser-only options at this time:
 Example usage to declare the fibonacci module as global with a no_conflict() function:
 
 ```javascript
-  ( this.undefine || require( 'undefine' )( module, require ) )( { global: true, no_conflict: true } )
-  define( 'fibonacci', [], function() {
+  ( this.undefine || require( 'undefine' )( module, require ) )
+  ( { global: true, no_conflict: true } )
+  ( 'fibonacci', [], function() {
     // fibonacci implementation here
   } )
 ```
