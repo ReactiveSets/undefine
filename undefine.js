@@ -22,68 +22,54 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
 */
-;!function( undefine_factory ) {
-  'use strict';
-  
-  if ( ( typeof define == 'function' && define.amd ) || typeof exports != 'object' ) {
-    // In the browser, w/ or w/out AMD loader
-    undefine_factory( window );
-  } else {
-    // Node
-    undefine_factory( module, require, exports );
-  }
-}
-( function( module, require, exports ) {
+;!function undefine_factory( global ) {
   'use strict';
   
   var me      = 'undefine'
-    , log     = get_logger()
+    , log     = typeof console == 'object' && console.log && console.log.bind( console, me + ':' ) || function() {} 
     , modules = {}
   ;
   
-  if ( exports ) {
-    // Node
-    log( 'loaded by node' );
-    
-    // Requires to first set node module and require, that of the module being defined, not this module object
-    module.exports = set_module;
-    
-    return
-  }
-  
-  // In browser, AMD or Globals
-  // Module is set to the global window object
-  var result = set_module( module );
-  
   if ( has_define() ) {
-    log( 'cooperating with AMD loader' );
+    log( 'Cooperating with AMD loader, define.amd:', has_define() );
     
     // AMD loader provides its own require function
   } else {
-    log( 'standalone globally' );
+  
+    // @Node.js_code
+    if ( typeof exports == 'object' ) {
+      log( 'Loaded by node' );
+      
+      // Requires to first set node module and require, that of the module being defined, not this global object
+      return module.exports = set_module;
+    }
+
+    log( 'Standalone globally' );
     
-    module.require = function( dependencies, factory ) {
+    global.require = function _require( dependencies, factory ) {
       if ( ! factory ) {
         factory = dependencies;
         dependencies = null;
       }
       
-      get_dependencies( require_global, dependencies, module, factory );
-    };
+      get_dependencies( require_global, dependencies, global, factory );
+    }; // _require()
   }
   
-  return module[ me ] = result;
+  // In browser, AMD or Globals
+  // global is set to the global window object
+  global[ me ] = set_module( global );
   
   function set_module( module, node_require, node_exports ) {
     
-    return set_options;
+    return _undefine;
     
-    function set_options( options ) {
+    function _undefine( options ) {
       options = options || {};
       
-      return undefine;
+      return _define;
       
-      function undefine( name, dependencies, factory ) {
+      function _define( name, dependencies, factory ) {
         // name and factory are required, only dependencies is an optional parameter w/ undefine()
         
         // name is required to allow bundling without code transforms.
@@ -106,24 +92,27 @@
           
           /*
              If module is to be defined as a window global, require it immediately
-             This guaranties that module is executed and allows to set window.
-             https://github.com/umdjs/umd globals using a function wrapper does not work
+             This guaranties that factory is executed and allows to set window.
+             https://github.com/umdjs/umd/blob/master/amdWebGlobal.js does not work
              unless the module is later required, which is not guarantied if other modules
-             assume global dependencies
+             assume global dependencies.
           */
-          options.global && require( [ name ], function( exports ) {
+          options.global && ( global.require || global.curl || fatal( 'AMD require() not found' ) )( [ name ], function( exports ) {
             set_private_module( name, exports, options );
           } );
-        } if ( exports ) {
-          // Node
-          log( 'Node loading', name );
-          
-          call_factory( node_require, function( result ) {
-            if ( result ) module.exports = result;
-          } );
         } else {
-          // Globals
-          log( 'Global loading', name, options );
+        
+          // @Node.js_code
+          if ( typeof exports == 'object' ) {
+            log( 'Node loading', name );
+            
+            return call_factory( node_require, function( result ) {
+              if ( result ) module.exports = result;
+            } );
+          }
+          
+          // Standalone
+          log( 'Standalone loading', name, options );
           
           call_factory( require_global, function( result ) {
             set_private_module( name, result, options );
@@ -135,21 +124,13 @@
           
           return get_dependencies( require, dependencies, module, factory, node_exports, then );
         } // call_factory()
-      } // undefine()
-    } // set_options()
+      } // _define()
+    } // _undefine()
   } // set_module()
   
-  function get_logger() {
-    if ( typeof console == 'object' && typeof console.log == 'function' ) {
-      return console.log.bind( console, me + ':' );
-    } else {
-      return function() {};
-    }
-  } // get_logger()
-  
   function has_define() {
-    return typeof define == 'function' && !! define.amd;
-  }
+    return typeof define == 'function' && define.amd;
+  } // has_define()
   
   function get_dependencies( require, dependencies, module, factory, node_exports, then ) {
     var specials_dependencies = {
@@ -169,7 +150,7 @@
     function _require( dependency ) {
       return specials_dependencies[ dependency ] || require( dependency );
     } // _require()
-  }
+  } // get_dependencies()
   
   function require_global( dependency ) {
     var name = dependency.split( '/' ).pop();
@@ -177,40 +158,38 @@
     log( 'require_global(), name:', name );
     
     // ToDo: call module factory function lazyly only upon first require, unless global
-    var exports = modules[ name ] || window[ name ];
+    var exports = modules[ name ] || global[ name ];
     
-    if ( exports ) return exports;
+    exports || log( 'require_global(), module not yet available name:', name );
     
-    log( 'require_global(), module not yet available name:', name );
-    
-    // ToDo: wait until module is loaded
-    
-    return;
+    return exports;
   } // require_global()
   
   function set_private_module( name, exports, options ) {
     log( 'set_private_module', name, exports, options );
     
-    if ( modules[ name ] ) throw new Error( 'set_private_module(), allready loaded:', name );
+    modules[ name ] && fatal( 'set_private_module(), allready loaded: ' + name );
     
-    exports = exports || {};
+    modules[ name ] = exports || {};
     
-    modules[ name ] = exports;
-    
-    if ( options.global ) {
-      var previous = window[ name ];
+    if ( exports && options.global ) {
+      var no_conflict = options.no_conflict;
       
-      window[ name ] = exports;
-      
-      if ( options.no_conflict && ! exports.noConflict  ) {
-        exports.noConflict = no_conflict;
+      if ( no_conflict ) {
+        var previous = global[ name ];
+        
+        exports.no_conflict = function() {
+          global[ name ] = previous;
+          
+          return exports;
+        };
       }
-    }
-    
-    function no_conflict() {
-      window[ name ] = previous;
       
-      return exports;
+      global[ name ] = exports;
     }
   } // set_private_module()
-} ); // undefine.js
+  
+  function fatal( message ) {
+    throw new Error( me + ', ' + message );
+  } // fatal()
+}( this ); // undefine.js
