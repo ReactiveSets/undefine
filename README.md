@@ -120,10 +120,10 @@ all default to **false** and are browser-only options at this time:
 - **annonymous**: when used in conjunction with an AMD loader, this module will be registered annonymously.
 - **amd_name**: with an AMD loader, the module is registered under this name instead of the defined module name.
 
-Example usage to declare the fibonacci module as global:
+Example usage to declare the fibonacci module as global with a no_conflict() function:
 
 ```javascript
-  ( this.undefine || require( 'undefine' )( module, require ) )( { global: true } )
+  ( this.undefine || require( 'undefine' )( module, require ) )( { global: true, no_conflict: true } )
   define( 'fibonacci', [], function() {
     // fibonacci implementation here
   } )
