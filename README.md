@@ -2,7 +2,7 @@
 
 **Universal Module Loader, for node.js, browser scripts, bundles, and AMD define loaders**
 
-< 1 kB minified gzip, does not reinvent the wheel, if you need a dynamic loader pick one, **undefine** cooperates.
+< 1 kB minified gzip, does not reinvent the wheel, if you need a dynamic AMD script loader pick one, **undefine** cooperates.
 
 1. Start module with ```( this.undefine || require( 'undefine' )( module, require ) )()```
 2. Define module using named AMD signature ```( 'fibonacci', [], function() {} )```
@@ -77,6 +77,58 @@ fibonacci.js loaded dynamically:
 ```
 
 Also works with [curl-amd](test/curl.html).
+
+## How does it work?
+
+In first line of module:
+
+```javascript
+  ( this.undefine || require( 'undefine' )( module, require ) )()
+```
+
+1. **this.undefine** returns the function **window.undefine( options )** in the browser,
+undefined in Node
+2. In Node **require( 'undefine' )( module, require )** returns a function
+**undefine( options )** bound to Node **module** and **require**
+3. In both Node and the browser **undefine( options )** is evaluated and
+returns a **define()** function with the same signature as
+[AMD define](https://github.com/amdjs/amdjs-api/wiki/AMD)
+
+The module definition is then equivalent to:
+
+```javascript
+  define( 'fibonacci', [], function() {
+    return fibonacci;
+    
+    // Naive recursive implementation of a Fibonacci number calculator
+    function fibonacci( n ) {
+      if ( n < 0 ) return;
+      
+      if ( n < 2 ) return n;
+      
+      return fibonacci( n - 2 ) + fibonacci( n - 1 );
+    }
+  } )
+```
+### undefine( options )
+
+The optional Object parameter **options** can have the following attributes which
+all default to **false** and are browser-only options at this time:
+
+- **global**: this module will be injected into the global window Object e.g. **window[ 'fibonacci' ]**.
+- **no_conflict**: if **global** is truly, add a no_conflict function to module
+- **annonymous**: when used in conjunction with an AMD loader, this module will be registered annonymously.
+- **amd_name**: with an AMD loader, the module is registered under this name instead of the defined module name.
+
+Example usage to declare the fibonacci module as global:
+
+```javascript
+  ( this.undefine || require( 'undefine' )( module, require ) )( { global: true } )
+  define( 'fibonacci', [], function() {
+    // fibonacci implementation here
+  } )
+```
+
 
 ## Licence
 
