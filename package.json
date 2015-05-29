@@ -1,6 +1,6 @@
 {
   "name": "undefine",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Universal Module Loader, for node.js, browser scripts, bundles, and AMD define loaders",
   "main": "undefine.js",
   "engines": {
@@ -20,7 +20,7 @@
   "scripts": {
     "postinstall": "npm link && npm link undefine || true",
     "build": "cd dist && node ../node_modules/uglify-js/bin/uglifyjs --compress --mangle --output undefine-min.js --source-map undefine-min.map -- ../undefine.js",
-    "stats": "cd dist && cat undefine-min.js | gzip > undefine-min.js.gz && cat ../undefine.js | gzip > undefine.js.gz && wc ../undefine.js * | grep -v total && rm *.gz"
+    "stats": "cd dist && cat undefine-min.js | gzip > undefine-min.js.gz && cat ../undefine.js | gzip > undefine.js.gz && cat undefine-min.map | gzip > undefine-min.map.gz && wc ../undefine.js * | grep -v total && rm *.gz"
   },
   "repository": {
     "type": "git",

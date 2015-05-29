@@ -1,5 +1,5 @@
 ( this.undefine || require( 'undefine' )( module, require ) )
-( { global: true, no_conflict: true } )
+( { global: 'fib', no_conflict: true } )
 ( 'fibonacci', [], function() {
   return fibonacci;
   

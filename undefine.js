@@ -22,7 +22,7 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
 */
-;!function undefine_factory( global ) {
+!function undefine_factory( global ) {
   'use strict';
   
   var me      = 'undefine'
@@ -86,7 +86,7 @@
           
           dependencies && parameters.unshift( dependencies );
           
-          options.annonymous || parameters.unshift( options.amd_name || name );
+          options.annonymous || parameters.unshift( options.amd_id || name );
           
           define.apply( module, parameters );
           
@@ -98,7 +98,7 @@
              assume global dependencies.
           */
           options.global && ( global.require || global.curl || fatal( 'AMD require() not found' ) )( [ name ], function( exports ) {
-            set_private_module( name, exports, options );
+            register( name, exports, options );
           } );
         } else {
         
@@ -115,7 +115,7 @@
           log( 'Standalone loading', name, options );
           
           call_factory( require_global, function( result ) {
-            set_private_module( name, result, options );
+            register( name, result, options );
           } );
         }
         
@@ -141,7 +141,9 @@
     
     dependencies = ( dependencies || [ 'require', 'exports', 'module' ] ).map( _require );
     
-    // ToDo: wait if not all dependencies are met
+    // Wish: wait if not all dependencies are met
+    // This would be backward compatible since today most programs would fail if a dependency
+    // is not met.
     
     var result = factory.apply( module, dependencies );
     
@@ -153,29 +155,36 @@
   } // get_dependencies()
   
   function require_global( dependency ) {
-    var name = dependency.split( '/' ).pop();
+    var f    = 'require_global()'
+      , name = dependency.split( '/' ).pop()
+    ;
     
-    log( 'require_global(), name:', name );
+    log( f, 'name:', name );
     
-    // ToDo: call module factory function lazyly only upon first require, unless global
+    // Wish: a 'lazy' option to call factory function only upon first require, unless global
+    // This option would be backward compatible because it would be an option
     var exports = modules[ name ] || global[ name ];
     
-    exports || log( 'require_global(), module not yet available name:', name );
+    exports || log( f, 'module not yet available name:', name );
     
     return exports;
   } // require_global()
   
-  function set_private_module( name, exports, options ) {
-    log( 'set_private_module', name, exports, options );
+  function register( name, exports, options ) {
+    var f       = 'register()'
+      , _global = options.global
+    ;
     
-    modules[ name ] && fatal( 'set_private_module(), allready loaded: ' + name );
+    log( f, name, exports, options );
+    
+    modules[ name ] && fatal( f + ' allready loaded: ' + name );
     
     modules[ name ] = exports || {};
     
-    if ( exports && options.global ) {
-      var no_conflict = options.no_conflict;
+    if ( exports && _global ) {
+      name = typeof _global == 'string' ? _global : name;
       
-      if ( no_conflict ) {
+      if ( options.no_conflict ) {
         var previous = global[ name ];
         
         exports.no_conflict = function() {
@@ -187,7 +196,7 @@
       
       global[ name ] = exports;
     }
-  } // set_private_module()
+  } // register()
   
   function fatal( message ) {
     throw new Error( me + ', ' + message );

@@ -10,7 +10,7 @@
 
 [![NPM version](https://badge.fury.io/js/undefine.png)](http://badge.fury.io/js/undefine)
 
-Stability: Beta, used by [toubkal](https://github.com/ReactiveSets/toubkal), needs CI testing.
+Stability: Feature complete, used by [toubkal](https://github.com/ReactiveSets/toubkal), needs CI testing.
 
 ## Example
 
@@ -101,26 +101,33 @@ The module definition is then equivalent to:
     // fibonacci implementation here
   } )
 ```
+
+Module ids must be set to the filename without the js extension, allowing to require
+modules loaded using script tags. To override global module names registered in the
+**window** Object, use the **global** option described bellow.
+
 ### undefine( options )
 
 The optional Object parameter **options** can have the following attributes which
 all default to **false** and are browser-only options at this time:
 
-- **global**: this module will be injected into the global window Object e.g. **window[ 'fibonacci' ]**.
-- **no_conflict**: if **global** is truly, add a no_conflict function to module
-- **annonymous**: when used in conjunction with an AMD loader, this module will be registered annonymously.
-- **amd_name**: with an AMD loader, the module is registered under this name instead of the defined module name.
+- **global**: register into the global **window** Object e.g. **window[ 'fibonacci' ]**.
+If **global** is a string, register into window using this string.
+- **no_conflict**: if **global** is truly, add **no_conflict()** to module.
 
-Example usage to declare the fibonacci module as global with a no_conflict() function:
+Additional options when used in conjunction with an AMD loader:
+- **annonymous**: register annonymously.
+- **amd_id**: register under this id instead of filename.
+
+Example usage to declare the fibonacci module as **window.fib** with no_conflict():
 
 ```javascript
   ( this.undefine || require( 'undefine' )( module, require ) )
-  ( { global: true, no_conflict: true } )
+  ( { global: 'fib', no_conflict: true } )
   ( 'fibonacci', [], function() {
     // fibonacci implementation here
   } )
 ```
-
 
 ## Licence
 
