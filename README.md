@@ -134,9 +134,9 @@ As an extension to AMD dependencies specification, a dependency may be specified
 an Array of two strings where the first string is the exported name and the second
 string is the Node.js module name.
 
-Example: the following module **loggable** has two dependencies, the first is
-**./extend.js**, while the second is the **uuid** which is available in the window
-global 'uuid' or as the Node.js module **'node-uuid'**:
+Example: the following **loggable** module has two dependencies, the first is
+**./extend.js**, while the second is **uuid** which is available either in the window
+global **uuid** or as Node.js module **node-uuid**:
 
 ```javascript
   ( this.undefine || require( 'undefine' )( module, require ) )()
