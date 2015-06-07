@@ -28,6 +28,7 @@
   var me      = 'undefine'
     , log     = typeof console == 'object' && console.log && console.log.bind( console, me + ':' ) || function() {} 
     , modules = {}
+    , node    = 0;
   ;
   
   if ( has_define() ) {
@@ -39,6 +40,8 @@
     // @Node.js_code
     if ( typeof exports == 'object' ) {
       log( 'Loaded by node' );
+      
+      node = 1;
       
       // Requires to first set node module and require, that of the module being defined, not this global object
       return module.exports = set_module;
@@ -84,7 +87,7 @@
           
           var parameters = [ factory ];
           
-          dependencies && parameters.unshift( dependencies );
+          dependencies && parameters.unshift( dependencies.map( disambiguate ) );
           
           options.annonymous || parameters.unshift( options.amd_id || name );
           
@@ -106,9 +109,15 @@
           if ( typeof exports == 'object' ) {
             log( 'Node loading', name );
             
-            return call_factory( node_require, function( result ) {
-              if ( result ) module.exports = result;
-            } );
+            return call_factory(
+              function( dependency ) {
+                return node_require( disambiguate( dependency ) )
+              },
+              
+              function( result ) {
+                if ( result ) module.exports = result;
+              }
+            );
           }
           
           // Standalone
@@ -154,9 +163,13 @@
     } // _require()
   } // get_dependencies()
   
+  function disambiguate( dependency ) {
+    return dependency.pop ? dependency[ node ] : dependency
+  } // disambiguate()
+  
   function require_global( dependency ) {
-    var f    = 'require_global()'
-      , name = dependency.split( '/' ).pop()
+    var f = 'require_global()'
+      , name = disambiguate( dependency ).split( '/' ).pop()
     ;
     
     log( f, 'name:', name );
@@ -165,7 +178,7 @@
     // This option would be backward compatible because it would be an option
     var exports = modules[ name ] || global[ name ];
     
-    exports || log( f, 'module not yet available name:', name );
+    exports || fatal( f + ' not found: ' + name );
     
     return exports;
   } // require_global()

@@ -128,6 +128,22 @@ Example usage to declare the fibonacci module as **window.fib** with no_conflict
     // fibonacci implementation here
   } )
 ```
+### Dependencies specification
+
+As an extension to AMD dependencies specification, a dependency may be specified with
+an Array of two strings where the first string is the exported name and the second
+string is the Node.js module name.
+
+Example: the following module **loggable** has two dependencies, the first is
+**./extend.js**, while the second is the **uuid** which is available in the window
+global 'uuid' or as the Node.js module **'node-uuid'**:
+
+```javascript
+  ( this.undefine || require( 'undefine' )( module, require ) )()
+  ( 'loggable', [ './extend', [ 'uuid', 'node-uuid' ] ], function( extend, uuid ) {
+    // loggable implementation here
+  } )
+```
 
 ## Licence
 
