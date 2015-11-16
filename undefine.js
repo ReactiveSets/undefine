@@ -27,19 +27,21 @@
   
   var me      = 'undefine'
     , log     = typeof console == 'object' && console.log && console.log.bind( console, me + ':' ) || function() {} 
+    , de      = false
+    , ug      = log
     , modules = {}
     , node    = 0;
   ;
   
   if ( has_define() ) {
-    log( 'Cooperating with AMD loader, define.amd:', has_define() );
+    de&&ug( 'Cooperating with AMD loader, define.amd:', has_define() );
     
     // AMD loader provides its own require function
   } else {
   
     // @Node.js_code
     if ( typeof exports == 'object' ) {
-      log( 'Loaded by node' );
+      de&&ug( 'Loaded by node' );
       
       node = 1;
       
@@ -47,7 +49,7 @@
       return module.exports = set_module;
     }
 
-    log( 'Standalone globally' );
+    de&&ug( 'Standalone globally' );
     
     global.require = function _require( dependencies, factory ) {
       if ( ! factory ) {
@@ -83,7 +85,7 @@
         
         if ( has_define() ) {
           // AMD define
-          log( 'AMD loading', name, options );
+          de&&ug( 'AMD loading', name, options );
           
           var parameters = [ factory ];
           
@@ -107,7 +109,7 @@
         
           // @Node.js_code
           if ( typeof exports == 'object' ) {
-            log( 'Node loading', name );
+            de&&ug( 'Node loading', name );
             
             return call_factory(
               function( dependency ) {
@@ -121,7 +123,7 @@
           }
           
           // Standalone
-          log( 'Standalone loading', name, options );
+          de&&ug( 'Standalone loading', name, options );
           
           call_factory( require_global, function( result ) {
             register( name, result, options );
@@ -172,7 +174,7 @@
       , name = disambiguate( dependency ).split( '/' ).pop()
     ;
     
-    log( f, 'name:', name );
+    de&&ug( f, 'name:', name );
     
     // Wish: a 'lazy' option to call factory function only upon first require, unless global
     // This option would be backward compatible because it would be an option
@@ -188,7 +190,7 @@
       , _global = options.global
     ;
     
-    log( f, name, exports, options );
+    de&&ug( f, name, exports, options );
     
     modules[ name ] && fatal( f + ' allready loaded: ' + name );
     
