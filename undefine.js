@@ -171,8 +171,12 @@
   
   function require_global( dependency ) {
     var f = 'require_global()'
-      , name = disambiguate( dependency ).split( '/' ).pop()
+      , name = disambiguate( dependency )
     ;
+    
+    if ( typeof name != 'string' ) return name; // dependency name is the exported value
+    
+    name = name.split( '/' ).pop();
     
     de&&ug( f, 'name:', name );
     

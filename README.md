@@ -10,7 +10,16 @@
 
 [![NPM version](https://badge.fury.io/js/undefine.png)](http://badge.fury.io/js/undefine)
 
-Stability: Feature complete, used by [toubkal](https://github.com/ReactiveSets/toubkal), needs CI testing.
+Stability: Stable, used by [toubkal](https://github.com/ReactiveSets/toubkal).
+
+## Features
+
+- Allows dual dependencies definitions for the browser and node
+- Shortest module biolerplate
+- Comprehensive, trully works in all situations, unlike UMD which is broken
+- Smallest footprint
+- Compatible with AMD module loaders such as require.js and curl-amd
+- Does not require a build process
 
 ## Example
 
@@ -131,8 +140,8 @@ Example usage to declare the fibonacci module as **window.fib** with no_conflict
 ### Dependencies specification
 
 As an extension to AMD dependencies specification, a dependency may be specified with
-an Array of two strings where the first string is the exported name and the second
-string is the Node.js module name.
+an Array of two strings where the first string is the exported name in the browser and
+the second string is a Nodejs module name.
 
 Example: the following **loggable** module has two dependencies, the first is
 **./extend.js**, while the second is **uuid** which is available either in the window
@@ -142,6 +151,24 @@ global **uuid** or as Node.js module **node-uuid**:
   ( this.undefine || require( 'undefine' )( module, require ) )()
   ( 'loggable', [ './extend', [ 'uuid', 'node-uuid' ] ], function( extend, uuid ) {
     // loggable implementation here
+  } )
+```
+
+Also, if a module is not available on the browser or in node, one can specify a non-string
+value, typically falsy, where the module is not available.
+
+Example: Node module **css-select** emulates CSS3 querySelector() method. To use this module
+one can apply the following definition for dependencies:
+
+```javascript
+  ( this.undefine || require( 'undefine' )( module, require ) )()
+  ( 'query_selector', [ [ 0, 'css-select' ] ], function( css_select ) {
+    var selector = '#comments';
+    
+    return css_select
+      ? css_select.selectOne( selector, [] /* should be an htmlparse2 document or element */ )
+      : document.querySelector( selector )
+    ;
   } )
 ```
 
