@@ -1,6 +1,6 @@
 {
   "name": "undefine",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "Universal Module Loader, for node.js, browser scripts, bundles, and AMD define loaders",
   "main": "undefine.js",
   "engines": {
