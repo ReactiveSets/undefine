@@ -1,26 +1,23 @@
 {
   "name": "undefine",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "Universal Module Loader, for node.js, browser scripts, bundles, and AMD define loaders",
   "main": "undefine.js",
   "engines": {
     "node": ">=0.6.0"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "uglify-js": "latest",
     "requirejs": "^2.1.17",
-    "curl-amd": "^0.8.12",
-    "coffee-script": "1.7.1",
-    "mocha": "1.18.2",
-    "expect.js": "0.3.1",
-    "mocha-unfunk-reporter": "0.4.0"
+    "curl-amd": "^0.8.12"
   },
   "scripts": {
-    "test"       : "node test/for_node",
-    "build"      : "cd dist && node ../node_modules/uglify-js/bin/uglifyjs --compress --mangle --output undefine-min.js --source-map undefine-min.map -- ../undefine.js",
-    "stats"      : "cd dist && cat undefine-min.js | gzip > undefine-min.js.gz && cat ../undefine.js | gzip > undefine.js.gz && cat undefine-min.map | gzip > undefine-min.map.gz && wc ../undefine.js * | grep -v total && rm *.gz"
+    "preinstall": "node node_modules_self_reference.js remove",
+    "postinstall": "node node_modules_self_reference.js add",
+    "test": "node test/for_node",
+    "build": "cd dist && node ../node_modules/uglify-js/bin/uglifyjs --compress --mangle --output undefine-min.js --source-map undefine-min.map -- ../undefine.js",
+    "stats": "cd dist && cat undefine-min.js | gzip > undefine-min.js.gz && cat ../undefine.js | gzip > undefine.js.gz && cat undefine-min.map | gzip > undefine-min.map.gz && wc ../undefine.js * | grep -v total && rm *.gz"
   },
   "repository": {
     "type": "git",
