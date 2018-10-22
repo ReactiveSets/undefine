@@ -1,11 +1,15 @@
 {
   "name": "undefine",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "description": "Universal Module Loader, for node.js, browser scripts, bundles, and AMD define loaders",
   "main": "undefine.js",
   "engines": {
     "node": ">=0.6.0"
   },
+  "files": [
+    "dist",
+    "node_modules_self_reference.js"
+  ],
   "dependencies": {},
   "devDependencies": {
     "uglify-js": "2.x",
