@@ -2,7 +2,7 @@
 
     The MIT License (MIT)
 
-    Copyright (c) 2015, Reactive Sets
+    Copyright (c) 2015-2020, Reactive Sets
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,10 @@
   'use strict';
   
   var me      = 'undefine'
-    , log     = typeof console == 'object' && console.log && console.log.bind( console, me + ':' ) || function() {} 
-    , de      = false
+    , c       = typeof console == 'object' && console
+    , clog    = c && c.log
+    , log     = clog && clog.bind( c, me + ':' ) || function() {} 
+    , de      = 0
     , ug      = log
     , modules = {}
     , node    = 0;
