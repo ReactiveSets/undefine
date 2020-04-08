@@ -1,6 +1,6 @@
 {
   "name": "undefine",
-  "version": "0.2.13",
+  "version": "0.2.14",
   "description": "Universal Module Loader, for node.js, browser scripts, bundles, and AMD define loaders",
   "main": "undefine.js",
   "engines": {
@@ -9,10 +9,8 @@
   "files": [
     "dist"
   ],
-  "dependencies": {
-    "allow-require-me": "^1.0.0"
-  },
   "devDependencies": {
+    "undefine": "file:.",
     "curl-amd": "0.8.x",
     "requirejs": "^2.3.6",
     "uglify-js": "3.x"
@@ -20,8 +18,7 @@
   "scripts": {
     "test": "node test/for_node",
     "build": "cd dist && sh ../node_modules/.bin/uglifyjs --compress --mangle --output undefine-min.js --source-map 'url=undefine-min.js.map' -- ../undefine.js",
-    "stats": "cd dist && cat undefine-min.js | gzip > undefine-min.js.gz && cat ../undefine.js | gzip > undefine.js.gz && cat undefine-min.map | gzip > undefine-min.map.gz && wc ../undefine.js * | grep -v total && rm *.gz",
-    "postinstall": "node node_modules\\allow-require-me\\allow-require-me.js add"
+    "stats": "cd dist && cat undefine-min.js | gzip > undefine-min.js.gz && cat ../undefine.js | gzip > undefine.js.gz && cat undefine-min.map | gzip > undefine-min.map.gz && wc ../undefine.js * | grep -v total && rm *.gz"
   },
   "repository": {
     "type": "git",
@@ -34,5 +31,6 @@
     "UMD"
   ],
   "author": "Reactive Sets",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {}
 }
